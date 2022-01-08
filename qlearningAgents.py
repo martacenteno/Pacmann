@@ -13,16 +13,16 @@
 
 
 from game import *
-from Queue import *
 from learningAgents import ReinforcementAgent
 from featureExtractors import *
 
 import os.path
-
+import queue
 import random,util,math,numpy
+from tensorflow import keras
 from keras.models import Sequential, model_from_json
 from keras.layers import Dense, Dropout, Activation, Convolution2D, Flatten
-from keras.optimizers import SGD
+from tensorflow.keras.optimizers import SGD
 
 
 class QLearningAgent(ReinforcementAgent):
@@ -132,12 +132,12 @@ class QLearningAgent(ReinforcementAgent):
 
 			x = self.getFeatures(state, a)
 			y = self.network.predict(x)[0][0]
-			print 'a: %5s | x = [%3d, %3d, %3d, %3d, %.2f, %1d, %1d] | out = %.4f' % (a, ghostDistance, foodDistance, intersectionDistance, capsuleDistance, progress, closerToGlobalFood, scaredGhost, y)	
+			print('a: %5s | x = [%3d, %3d, %3d, %3d, %.2f, %1d, %1d] | out = %.4f' % (a, ghostDistance, foodDistance, intersectionDistance, capsuleDistance, progress, closerToGlobalFood, scaredGhost, y))	
 
 		p = ""
 		i = 1
 		for ghostPos in state.getGhostPositions():
-			print "ghost %d is at position (%2d, %2d)" % (i, ghostPos[0], ghostPos[1])
+			print("ghost %d is at position (%2d, %2d)" % (i, ghostPos[0], ghostPos[1]))
 			i += 1
 
 				
@@ -237,7 +237,7 @@ class QLearningAgent(ReinforcementAgent):
 					self.experiences.pop(0)
 
 		if self.displayWeights:
-				print self.network.get_weights()
+				print(self.network.get_weights())
 
 
 	# calculates the correct exploration rate depending on method of choice
@@ -265,7 +265,7 @@ class QLearningAgent(ReinforcementAgent):
 		newPosition = state.generateSuccessor(0, action).getPacmanState().getPosition()
 
 		# setup data structures for the search
-		openQueue = Queue()
+		openQueue = queue.Queue()
 		closedSet = set()
 
 		# ensures we 'close of our back' and start searching only in the given direction
@@ -312,7 +312,7 @@ class QLearningAgent(ReinforcementAgent):
 		newPosition = state.generateSuccessor(0, action).getPacmanState().getPosition()
 
 		# setup data structures for the search
-		openQueue = Queue()
+		openQueue = queue.Queue()
 		closedSet = set()
 
 		# ensures we 'close of our back' and start searching only in the given direction
@@ -365,7 +365,7 @@ class QLearningAgent(ReinforcementAgent):
 		newPosition = state.generateSuccessor(0, action).getPacmanState().getPosition()
 
 		# setup data structures for the search
-		openQueue = Queue()
+		openQueue = queue.Queue()
 		closedSet = set()
 
 		# ensures we 'close of our back' and start searching only in the given direction
@@ -413,7 +413,7 @@ class QLearningAgent(ReinforcementAgent):
 		newPosition = state.generateSuccessor(0, action).getPacmanState().getPosition()
 
 		# setup data structures for the search
-		openQueue = Queue()
+		openQueue = queue.Queue()
 		closedSet = set()
 
 		# ensures we 'close of our back' and start searching only in the given direction
@@ -461,7 +461,7 @@ class QLearningAgent(ReinforcementAgent):
 		newPosition = state.generateSuccessor(0, action).getPacmanState().getPosition()
 
 		# setup data structures for the search
-		openQueue = Queue()
+		openQueue = queue.Queue()
 		closedSet = set()
 
 		# ensures we 'close of our back' and start searching only in the given direction
@@ -489,7 +489,7 @@ class QLearningAgent(ReinforcementAgent):
 			# round ghost positions in case they are inbetween nodes
 			# this happens when they are scared and have reduced movement speed
 			for ghost in state.getGhostStates():
-				 if round(ghost.getPosition()[0]) == currentNode.position[0]:
+				if round(ghost.getPosition()[0]) == currentNode.position[0]:
 					if round(ghost.getPosition()[1]) == currentNode.position[1]:
 						return ghost
 
@@ -586,13 +586,13 @@ class PacmanQAgent(QLearningAgent):
 		# constructs a network if there is none
 		if not os.path.isfile('./network.json'):
 
-			print 'Initializing network ...'
+			print('Initializing network ...')
 			self.network = Sequential()
 
 			# specify input layer and add a hidden layer, add activation function and a single neural output layer
-			self.network.add(Dense(self.hiddenUnits, input_dim=self.inputDim, init="uniform"))
+			self.network.add(Dense(self.hiddenUnits, input_dim=self.inputDim, kernel_initializer="uniform"))
 			self.network.add(Activation('relu'))
-			self.network.add(Dense(self.outputDim, init="uniform"))
+			self.network.add(Dense(self.outputDim, kernel_initializer="uniform"))
 
 			# define @optimizer and compile the network
 			sgd = SGD(lr=0.0002, decay=1e-6, momentum=0.95, nesterov=True)
@@ -605,7 +605,7 @@ class PacmanQAgent(QLearningAgent):
 			self.network.save_weights('weights.h5')
 
 		else:
-			print 'Loading network ...'
+			print('Loading network ...')
 			self.network = model_from_json(open('network.json').read())
 
 			sgd = SGD(lr=0.0002, decay=1e-6, momentum=0.95, nesterov=True)
@@ -613,7 +613,7 @@ class PacmanQAgent(QLearningAgent):
 			self.network.compile(loss='mean_squared_error', optimizer=sgd)
 			self.network.summary()
 
-		print 'Network is ready to use.'
+		print('Network is ready to use.')
 		QLearningAgent.__init__(self, **args)
 
 	def getAction(self, state):
