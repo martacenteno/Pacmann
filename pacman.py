@@ -667,19 +667,21 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     return games
 
 if __name__ == '__main__':
-    """
-    The main function called when pacman.py is run
-    from the command line:
+	"""
+	The main function called when pacman.py is run
+	from the command line:
 
-    > python pacman.py
+	> python pacman.py
 
-    See the usage string for more details.
+	See the usage string for more details.
 
-    > python pacman.py --help
-    """
-    args = readCommand( sys.argv[1:] ) # Get game components based on input
-    runGames( **args )
+	> python pacman.py --help
+	"""
+	args = readCommand( sys.argv[1:] ) # Get game components based on input
+	for i in range(5):
+		print('Game number %d', i)
+		runGames( **args )
 
     # import cProfile
     # cProfile.run("runGames( **args )")
-    pass
+	pass

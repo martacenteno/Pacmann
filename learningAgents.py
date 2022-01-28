@@ -251,7 +251,7 @@ class ReinforcementAgent(ValueEstimationAgent):
 
 	def final(self, state):
 		"""
-		  Called by Pacman game at the terminal state
+		Called by Pacman game at the terminal state
 		"""
 		deltaReward = state.getScore() - self.lastState.getScore()
 		self.observeTransition(self.lastState, self.lastAction, state, deltaReward)
@@ -260,6 +260,7 @@ class ReinforcementAgent(ValueEstimationAgent):
 		if self.trainOnline:
 
 			# save the weights of the network
+			print(self.network.get_weights())
 			self.network.save_weights('weights.h5', overwrite=True)
 
 

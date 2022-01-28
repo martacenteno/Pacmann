@@ -86,8 +86,8 @@ class QLearningAgent(ReinforcementAgent):
 
 	# finds and returns the legal action in @state that corresponds to the highest Q-value
 	def computeActionFromQValues(self, state):
-
-		values = [self.getQValue(state, a) for a in self.getLegalActions(state)]
+		actions = self.getLegalActions(state)
+		values = [self.getQValue(state, a) for a in actions]
 		maxValue = max(values)
 		return random.choice([a for a,v in zip(actions, values) if v == maxValue])
 
@@ -227,9 +227,9 @@ class QLearningAgent(ReinforcementAgent):
 
 				# train network
 				if self.verboseTraining:
-					self.network.fit(patterns, targets, nb_epoch = 1, batch_size = self.batchSize, verbose = 1)
+					self.network.fit(patterns, targets, epochs = 1, batch_size = self.batchSize, verbose = 1)
 				else:
-					self.network.fit(patterns, targets, nb_epoch = 1, batch_size = self.batchSize, verbose = 0)
+					self.network.fit(patterns, targets, epochs = 1, batch_size = self.batchSize, verbose = 0)
 
 		
 				# renew experiences when maximum capacity has been reached
@@ -510,7 +510,7 @@ class QLearningAgent(ReinforcementAgent):
 class PacmanQAgent(QLearningAgent):
 	"Exactly the same as QLearningAgent, but with different default parameters"
 
-	def __init__(self, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, **args):
+	def __init__(self, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=1000, **args):
 		"""
 		These default parameters can be changed from the pacman.py command line.
 		For example, to change the exploration rate, try:
@@ -536,14 +536,14 @@ class PacmanQAgent(QLearningAgent):
 
 			# exploration settings
 		# determines if exploration of any policy should be performed or not
-		self.explore = False
+		self.explore = True
 
 		# exploration rate that the model will start with
 		self.initialExplorationRate = 1.0
 
 		# exploration rate that the model will end with after @decayPeriod episodes
 		# if @decayExplorationOnEpisode is False, the exploration rate will be set to this one for all episodes
-		self.finalExplorationRate = 0.01
+		self.finalExplorationRate = 1.0
 
 		# controls if the exploration rate should decrease for each episode
 		self.decayExplorationOnEpisode = False
@@ -553,16 +553,16 @@ class PacmanQAgent(QLearningAgent):
 
 			# training settings
 		# determines if pacman will be training between turns or not
-		self.trainOnline = False	
+		self.trainOnline = True	
 	
 		# controls if loss values for each training session should print to screen
-		self.verboseTraining = False		
+		self.verboseTraining = True	
 
 		# controls if the weights of the network should be printed out after each training session
-		self.displayWeights = False	
+		self.displayWeights = False
 
 		# size of training batch for each training session
-		self.batchSize = 32				
+		self.batchSize = 10			
 
 			# experience replay settings
 
@@ -575,7 +575,7 @@ class PacmanQAgent(QLearningAgent):
 
 		# minimum number of transitions needed to start a training session
 		# if having less, no training will be done for this turn
-		self.minimumExperienceSize = 32
+		self.minimumExperienceSize = 10
 
 			# network settings
 		# network dimensions
@@ -595,7 +595,7 @@ class PacmanQAgent(QLearningAgent):
 			self.network.add(Dense(self.outputDim, kernel_initializer="uniform"))
 
 			# define @optimizer and compile the network
-			sgd = SGD(lr=0.0002, decay=1e-6, momentum=0.95, nesterov=True)
+			sgd = SGD(learning_rate=0.0002, decay=1e-6, momentum=0.95, nesterov=True)
 			self.network.compile(loss='mean_squared_error', optimizer=sgd)
 			self.network.summary()
 
@@ -608,8 +608,9 @@ class PacmanQAgent(QLearningAgent):
 			print('Loading network ...')
 			self.network = model_from_json(open('network.json').read())
 
-			sgd = SGD(lr=0.0002, decay=1e-6, momentum=0.95, nesterov=True)
+			sgd = SGD(learning_rate=0.0002, decay=1e-6, momentum=0.95, nesterov=True)
 			self.network.load_weights('weights.h5')
+			print(self.network.get_weights())
 			self.network.compile(loss='mean_squared_error', optimizer=sgd)
 			self.network.summary()
 
@@ -622,50 +623,6 @@ class PacmanQAgent(QLearningAgent):
 		informs parent of action for Pacman.  Do not change or remove this
 		method.
 		"""
-		action = QLearningAgent.getAction(self,state)
+		action = QLearningAgent.getPolicy(self,state)
 		self.doAction(state,action)
 		return action
-
-
-
-class ApproximateQAgent(PacmanQAgent):
-	"""
-	   ApproximateQLearningAgent
-
-	   You should only have to overwrite getQValue
-	   and update.	All other QLearningAgent functions
-	   should work as is.
-	"""
-	def __init__(self, extractor='IdentityExtractor', **args):
-		self.featExtractor = util.lookup(extractor, globals())()
-		PacmanQAgent.__init__(self, **args)
-		self.weights = util.Counter()
-
-	def getWeights(self):
-		return self.weights
-
-	def getQValue(self, state, action):
-		"""
-		  Should return Q(state,action) = w * featureVector
-		  where * is the dotProduct operator
-		"""
-		"*** YOUR CODE HERE ***"
-		util.raiseNotDefined()
-
-	def update(self, state, action, nextState, reward):
-		"""
-		   Should update your weights based on transition
-		"""
-		"*** YOUR CODE HERE ***"
-		util.raiseNotDefined()
-
-	def final(self, state):
-		"Called at the end of each game."
-		# call the super-class final method
-		PacmanQAgent.final(self, state)
-
-		# did we finish training?
-		if self.episodesSoFar == self.numTraining:
-			# you might want to print your weights here for debugging
-			"*** YOUR CODE HERE ***"
-			pass
